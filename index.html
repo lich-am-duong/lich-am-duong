@@ -97,6 +97,46 @@ function getNghiKy(truc){
   };
   return map[truc]||["Không rõ"];
 }
+<script>
+// ====== BẢNG SAO PHONG THỦY ======
+const STAR_RULES = {
+  good: [
+    { name: "Thiên Đức", type: "can", values: ["Giáp","Kỷ"] },
+    { name: "Nguyệt Đức", type: "can", values: ["Ất","Canh"] },
+    { name: "Thiên Hỷ", type: "chi", values: ["Tý","Ngọ"] },
+    { name: "Sinh Khí", type: "truc", values: ["Khai","Thành","Định"] }
+  ],
+  bad: [
+    { name: "Tam Nương", type: "lunarDay", values: [3,7,13,18,22,27] },
+    { name: "Nguyệt Kỵ", type: "lunarDay", values: [5,14,23] },
+    { name: "Sát Chủ", type: "truc", values: ["Phá","Nguy"] },
+    { name: "Thọ Tử", type: "truc", values: ["Bế"] }
+  ]
+};
+
+// ====== HÀM TRA SAO ======
+function getStarsFull(ctx){
+  const good=[], bad=[];
+  STAR_RULES.good.forEach(s=>{
+    if(
+      (s.type==="can" && s.values.includes(ctx.can)) ||
+      (s.type==="chi" && s.values.includes(ctx.chi)) ||
+      (s.type==="truc" && s.values.includes(ctx.truc))
+    ){
+      good.push(s.name);
+    }
+  });
+  STAR_RULES.bad.forEach(s=>{
+    if(
+      (s.type==="lunarDay" && s.values.includes(ctx.lunarDay)) ||
+      (s.type==="truc" && s.values.includes(ctx.truc))
+    ){
+      bad.push(s.name);
+    }
+  });
+  return { good, bad };
+}
+</script>
 
 function convert(){
   const v=document.getElementById("solarDate").value;
@@ -123,3 +163,4 @@ function convert(){
 </script>
 </body>
 </html>
+
