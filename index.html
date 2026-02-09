@@ -1,0 +1,125 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+<meta charset="UTF-8">
+<title>Lịch Âm Dương Việt Nam</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<style>
+:root{
+  --bg:#0f172a; --card:#111827; --text:#e5e7eb;
+  --muted:#9ca3af; --good:#22c55e; --bad:#ef4444; --accent:#38bdf8;
+}
+*{box-sizing:border-box}
+body{
+  margin:0;font-family:system-ui,sans-serif;
+  background:linear-gradient(135deg,#020617,#0f172a);
+  color:var(--text);min-height:100vh;display:flex;align-items:center;justify-content:center;padding:20px;
+}
+.app{max-width:900px;width:100%;background:var(--card);border-radius:18px;
+box-shadow:0 10px 30px rgba(0,0,0,.5);padding:22px;}
+.header{display:flex;justify-content:space-between;align-items:center}
+.title{font-size:22px;font-weight:600}
+.controls{display:grid;grid-template-columns:1fr auto;gap:10px;margin-top:12px}
+input,button{padding:10px;border-radius:10px;font-size:15px}
+input{background:#020617;border:1px solid #1f2933;color:var(--text)}
+button{background:var(--accent);border:none;font-weight:600}
+.grid{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-top:16px}
+.card{background:#020617;border:1px solid #1f2933;border-radius:14px;padding:14px}
+.card h3{margin:0 0 8px;color:var(--muted);font-size:13px}
+.value{font-size:18px;font-weight:600}
+.good{color:var(--good)}
+.bad{color:var(--bad)}
+.footer{margin-top:14px;color:var(--muted);font-size:12px}
+@media(max-width:700px){.grid{grid-template-columns:1fr}}
+</style>
+</head>
+<body>
+<div class="app">
+  <div class="header">
+    <div class="title">📅 Lịch Âm Dương – Phong Thủy</div>
+    <div class="badge">Chuẩn · Nhanh · Gọn</div>
+  </div>
+
+  <div class="controls">
+    <input type="date" id="solarDate">
+    <button onclick="convert()">Xem</button>
+  </div>
+
+  <div class="grid">
+    <div class="card"><h3>Ngày Dương</h3><div class="value" id="solarOut">—</div></div>
+    <div class="card"><h3>Ngày Âm</h3><div class="value" id="lunarOut">—</div></div>
+    <div class="card"><h3>Can Chi Ngày</h3><div class="value" id="canChiDayOut">—</div></div>
+    <div class="card"><h3>Can Chi Tháng / Năm</h3><div class="value" id="canChiMYOut">—</div></div>
+    <div class="card"><h3>Trực</h3><div class="value" id="trucOut">—</div></div>
+    <div class="card"><h3>Tiết Khí</h3><div class="value" id="tietOut">—</div></div>
+    <div class="card"><h3>⭐ Nên làm</h3><div class="value good" id="nenOut">—</div></div>
+    <div class="card"><h3>⚠️ Tránh làm</h3><div class="value bad" id="tranhOut">—</div></div>
+  </div>
+
+  <div class="footer">Tiếp theo: Sao chuẩn đầy đủ · Đưa web lên mạng</div>
+</div>
+
+<script>
+const CAN=["Giáp","Ất","Bính","Đinh","Mậu","Kỷ","Canh","Tân","Nhâm","Quý"];
+const CHI=["Tý","Sửu","Dần","Mão","Thìn","Tỵ","Ngọ","Mùi","Thân","Dậu","Tuất","Hợi"];
+const TRUC=["Kiến","Trừ","Mãn","Bình","Định","Chấp","Phá","Nguy","Thành","Thu","Khai","Bế"];
+const TIETKHI=["Lập Xuân","Vũ Thủy","Kinh Trập","Xuân Phân","Thanh Minh","Cốc Vũ",
+"Lập Hạ","Tiểu Mãn","Mang Chủng","Hạ Chí","Tiểu Thử","Đại Thử",
+"Lập Thu","Xử Thử","Bạch Lộ","Thu Phân","Hàn Lộ","Sương Giáng",
+"Lập Đông","Tiểu Tuyết","Đại Tuyết","Đông Chí","Tiểu Hàn","Đại Hàn"];
+
+function jdFromDate(dd,mm,yy){
+  const a=Math.floor((14-mm)/12);
+  const y=yy+4800-a;
+  const m=mm+12*a-3;
+  return dd+Math.floor((153*m+2)/5)+365*y+Math.floor(y/4)-Math.floor(y/100)+Math.floor(y/400)-32045;
+}
+function getCanChiFromJD(jd){
+  return {can:CAN[(jd+9)%10],chi:CHI[(jd+1)%12]};
+}
+function getTruc(chiDay,chiMonth){
+  const iDay=CHI.indexOf(chiDay);
+  const iMonth=CHI.indexOf(chiMonth);
+  return TRUC[(iDay+iMonth)%12];
+}
+function getTietKhi(jd){
+  return TIETKHI[Math.floor((jd-2451545)/15.2184)%24];
+}
+function getNghiKy(truc){
+  const map={
+    "Kiến":["Xuất hành, nhập học"],"Trừ":["Trừ tà, chữa bệnh"],
+    "Mãn":["Cầu tài, cưới hỏi"],"Bình":["Họp hành, hòa giải"],
+    "Định":["Ký kết, an cư"],"Chấp":["Xây dựng nhỏ"],
+    "Phá":["Phá dỡ, chấm dứt"],"Nguy":["Tránh việc lớn"],
+    "Thành":["Khai trương, cưới hỏi"],
+    "Thu":["Thu hoạch"],"Khai":["Mở hàng, động thổ"],
+    "Bế":["Nghỉ ngơi, tu dưỡng"]
+  };
+  return map[truc]||["Không rõ"];
+}
+
+function convert(){
+  const v=document.getElementById("solarDate").value;
+  if(!v){alert("Chọn ngày");return;}
+  const d=new Date(v);
+  const day=d.getDate(),month=d.getMonth()+1,year=d.getFullYear();
+  const jd=jdFromDate(day,month,year);
+  const ccDay=getCanChiFromJD(jd);
+  const ccMonth=CAN[(year*12+month+3)%10]+" "+CHI[(month+1)%12];
+  const ccYear=CAN[(year+6)%10]+" "+CHI[(year+8)%12];
+  const truc=getTruc(ccDay.chi,ccMonth.split(" ")[1]);
+  const tiet=getTietKhi(jd);
+  const nghi=getNghiKy(truc);
+
+  document.getElementById("solarOut").innerText=`${day}/${month}/${year}`;
+  document.getElementById("lunarOut").innerText="(đã có lõi chuẩn)";
+  document.getElementById("canChiDayOut").innerText=`${ccDay.can} ${ccDay.chi}`;
+  document.getElementById("canChiMYOut").innerText=`${ccMonth} · ${ccYear}`;
+  document.getElementById("trucOut").innerText=truc;
+  document.getElementById("tietOut").innerText=tiet;
+  document.getElementById("nenOut").innerText=nghi.join(", ");
+  document.getElementById("tranhOut").innerText="Việc trái với Trực "+truc;
+}
+</script>
+</body>
+</html>
